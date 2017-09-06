@@ -13,9 +13,12 @@ namespace POSTagging
 {
     public class TagProcessor
     {
-        private ICorporaRepository _CorporaRepository { get; set; }
-        public TagProcessor() {
-            _CorporaRepository = new CorporaRepository();
+		//private ICorporaRepository _CorporaRepository { get; set; }
+        private LocalCorporaRepository _CorporaRepository { get; set; }
+
+		public TagProcessor() {
+            //_CorporaRepository = new CorporaRepository();
+            _CorporaRepository = new LocalCorporaRepository();
         }
 
         public void LoadJson()
@@ -57,7 +60,7 @@ namespace POSTagging
 			var resultTags = new List<string>(new string[count]);
 
 			// https://stackoverflow.com/questions/3639768/parallel-foreach-ordered-execution
-			Parallel.For(0, count, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async i =>
+			Parallel.For(0, count, new ParallelOptions { MaxDegreeOfParallelism = 4 }, i =>
 			{
 				var word = RemoveSpecialCharacters(words[i]);
 				if (string.IsNullOrEmpty(word))
@@ -65,11 +68,11 @@ namespace POSTagging
 					resultTags[i] = @"";
 				}
 
-				string[] ss = (await _CorporaRepository.FindOneAsync(e => e.Word == word)).Tag;
+				string[] ss = _CorporaRepository.Get(word).Tag;
 
 				// 1/22/2002 mod (from Lisp code): if not in hash, try lower case:
 				if (ss == null)
-					ss = (await _CorporaRepository.FindOneAsync(e => e.Word == word.ToLower())).Tag;
+                    ss = _CorporaRepository.Get(word.ToLower()).Tag;
 				if (ss == null && word.Length == 1)
 					resultTags[i] = word + "^";
 				else if (ss == null)
@@ -165,9 +168,9 @@ namespace POSTagging
 		/// </summary>
 		/// <param name="sentence"></param>
 		/// <returns></returns>
-		public async void UpdateWord(WordTag corpus)
+		public void UpdateWord(WordTag corpus)
 		{
-			await _CorporaRepository.EditCorpusTags(corpus);
+            _CorporaRepository.EditCorpusTags(corpus);
 		}
 
 		/// <summary>
