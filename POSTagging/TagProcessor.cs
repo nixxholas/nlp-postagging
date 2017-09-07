@@ -32,7 +32,7 @@ namespace POSTagging
                     //string json = r.ReadToEnd();
 
                     while ((line = r.ReadLine()) != null) {
-                        Console.WriteLine("Pushing item " + item);
+                        // Console.WriteLine("Pushing item " + item);
 						var ss = line.Split(' ');
 						var word = ss[0];
 
@@ -40,6 +40,8 @@ namespace POSTagging
 							ObjectId.GenerateNewId(), word, ss.Skip(1).ToArray()));
                         item++;
 					}
+
+                    Console.WriteLine("Data fully loaded!");
                 }
             } catch (Exception ex) {
                 Console.WriteLine(ex.ToString());
